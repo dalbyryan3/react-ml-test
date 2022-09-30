@@ -4,7 +4,8 @@ if __name__ == "__main__":
     if len(args) != 0:
         print("This script requires no command-line argument")
         exit(1)
-    # import app and run here...
-    # exit() # Can pass an exit code here
+    import ml_test 
+    ml_test_app = ml_test.create_app()
+    ml_test_app.run(debug=True)
 else:
     raise ImportError("Need to run this file directly, don't import")
