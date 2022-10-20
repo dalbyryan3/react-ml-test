@@ -6,6 +6,9 @@ class RESTfulImage:
     def __init__(self) -> None:
         self._img = None
 
+    def reset(self):
+        self._img = None
+
     def get_b64_str(self) -> str:
         return "" if self._img is None else self.encode_PIL_as_b64_str(self._img)
 
@@ -23,7 +26,9 @@ class RESTfulImage:
         with BytesIO() as output:
             img.save(output, 'BMP')
             img_bytes = output.getvalue()
-        return base64.b64encode(img_bytes)
+        b_arr = base64.b64encode(img_bytes)
+        return b_arr.decode('utf-8')
+
 
     @staticmethod
     def decode_b64_str_as_PIL(b64_str:str)->Image:

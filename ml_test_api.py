@@ -1,16 +1,15 @@
-from flask import Flask, render_template
-from flask_restful import Resource, Api, reqparse
+from flask import Flask, render_template, request
+from flask_restful import Resource, Api
 from object_detector import ObjectDetector
 from restful_image import RESTfulImage
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, origins=[r"http://localhost:*", r"http://127.0.0.1:*"])
 api = Api(app)
 detect_thresh = 0.9
 object_detector = ObjectDetector(detect_thresh)
 staged_image = RESTfulImage()
-parser = reqparse.RequestParser()
-parser.add_argument('image')
-
 
 class ObjectDetectorResource(Resource):
     def __init__(self) -> None:
@@ -32,11 +31,17 @@ class StagedImageResource(Resource):
         super().__init__()
 
     def put(self):
-        b64_str = parser.parse_args['image']
+        form_dict = request.get_json()
+        if (form_dict is None) or ('image' not in form_dict):
+            return "Form did not have image", 400
+        b64_str = form_dict['image']
         staged_image.set_b64_str(b64_str)
 
     def get(self):
         return {'image' : staged_image.get_b64_str()}
+    
+    def delete(self):
+        staged_image.reset()
 
 # Add resources
 api.add_resource(ObjectDetectorResource, '/object-detector')
