@@ -1,5 +1,5 @@
 import './App.css';
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,6 +7,7 @@ import {
   Link
 } from "react-router-dom";
 import ImageUploading from 'react-images-uploading';
+import axios from 'axios';
 
 
 export default function App() {
@@ -49,13 +50,74 @@ function Home() {
   );
 }
 
+function ImageObjToB64Str(imageObj) {
+  let imageObjStr = imageObj["data_url"];
+  let idx = imageObjStr.indexOf(",");
+  if (idx > 0) {
+    imageObjStr = imageObjStr.slice(idx+1);
+  }
+  return imageObjStr;
+}
+function B64StrToImageObj(b64Str, imageTypeStr) {
+  let imageTypePrefix = `data:image/${imageTypeStr};base64,`;
+  return {data_url:`${imageTypePrefix}${b64Str}`};
+}
+
 function ObjectDetection() {
   const maxNumber = 1;
   const [images, setImages] = React.useState([]);
-  const onChange = (imageList, addUpdateIdx) => {
-    console.log(imageList, addUpdateIdx);
-    setImages(imageList)
+  const putImage = (imageObj) => {
+    axios.put("http://127.0.0.1:5000/object-detector/image", {image:ImageObjToB64Str(imageObj)})
+    .then((response) => {
+      getImage();
+    })
+    .catch((error) => {
+      console.log(error);
+    });
   };
+  const getImage = () => {
+    return axios.get("http://127.0.0.1:5000//object-detector/image")
+    .then((response) => {
+      let b64Str = response.data["image"];
+      if (b64Str === "") {
+        // console.log(`NO Server image`);
+        setImages([]);
+      }
+      else if (b64Str) {
+        let serverImage = B64StrToImageObj(b64Str, "bmp");
+        // console.log(`Server image: ${serverImage}`);
+        if (serverImage !== undefined){
+          setImages([serverImage]);
+        }
+      }
+    })
+    .catch((error) => {
+      console.log(`Error when getting staged image: ${error}`);
+    });
+  };
+  const deleteImage = () => {
+    return axios.delete("http://127.0.0.1:5000//object-detector/image")
+    .then((response) => {
+      getImage();
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  };
+
+  const onChange = (imageList, addUpdateIdx) => {
+    if (images.length === 0 && imageList.length === 1){ // Image added
+      putImage(imageList[0]);
+    } else if (images.length === 1 && imageList.length === 1) { // Image updated
+      putImage(imageList[0]);
+    } else if (images.length === 1 && imageList.length === 0) { // Image removed
+      deleteImage();
+    }
+  };
+
+  useEffect(() => {
+    getImage();
+  }, []);
 
   return (
     <div className="ObjectDetection">
@@ -91,12 +153,6 @@ function ObjectDetection() {
               {errors.maxFileSize && <span>Selected file size exceed maxFileSize</span>}
               {errors.resolution && <span>Selected file is not match your desired resolution</span>}
               </div> }
-              {/* {<div {...dragProps}>
-                {isDragging ? "Drop here please" : "Upload space"}
-                {imageList.map((image, index) => (
-                  <img key={index} src={image.data_url} />
-                ))}
-              </div>} */}
               <button
                 style={isDragging ? { color: 'red' } : undefined}
                 onClick={onImageUpload}
@@ -108,7 +164,7 @@ function ObjectDetection() {
               <button onClick={onImageRemoveAll}>Remove all images</button>
               {imageList.map((image, index) => (
                 <div key={index} className="image-item">
-                  <img src={image['data_url']} alt="" width="100" />
+                  <img src={image["data_url"]} alt="" width="100" />
                   <div className="image-item__btn-wrapper">
                     <button onClick={() => onImageUpdate(index)}>Update</button>
                     <button onClick={() => onImageRemove(index)}>Remove</button>
