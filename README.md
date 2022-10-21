@@ -4,7 +4,7 @@ This is a test application which provides a React frontend for communicating wit
 ## Usage
 Currently works for running the frontend and backend locally.
 
-First start the backend by going to react-ml-test-backend, creating a Python virtual environment (or using Anaconda) and calling 
+First start the backend by going to the backend folder, creating a Python virtual environment (or using Anaconda), and calling 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
@@ -13,8 +13,9 @@ then starting the backend using
 python3 main.py 
 ```
 
-Next start the fronend by going to react-ml-test-frontend and calling 
+Next start the frontend by going to the frontend folder, and calling 
 ```bash
+npm install
 npm start
 ```
 
