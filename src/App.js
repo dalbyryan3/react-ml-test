@@ -64,8 +64,12 @@ function B64StrToImageObj(b64Str, imageTypeStr) {
 }
 
 function ObjectDetection() {
+  // State
   const maxNumber = 1;
-  const [images, setImages] = React.useState([]);
+  const [stagedImages, setStagedImages] = React.useState([]);
+  const [resultImages, setResultImages] = React.useState([]);
+
+  // Functions
   const putImage = (imageObj) => {
     axios.put("http://127.0.0.1:5000/object-detector/image", {image:ImageObjToB64Str(imageObj)})
     .then((response) => {
@@ -81,13 +85,13 @@ function ObjectDetection() {
       let b64Str = response.data["image"];
       if (b64Str === "") {
         // console.log(`NO Server image`);
-        setImages([]);
+        setStagedImages([]);
       }
       else if (b64Str) {
         let serverImage = B64StrToImageObj(b64Str, "bmp");
         // console.log(`Server image: ${serverImage}`);
         if (serverImage !== undefined){
-          setImages([serverImage]);
+          setStagedImages([serverImage]);
         }
       }
     })
@@ -104,21 +108,42 @@ function ObjectDetection() {
       console.log(error);
     });
   };
+  const predictImage = () => {
+    return axios.get("http://127.0.0.1:5000//object-detector")
+    .then((response) => {
+      let b64Str = response.data["result_image"];
+      if (b64Str === "") {
+        // console.log(`NO Server image`);
+        setResultImages([]);
+      }
+      else if (b64Str) {
+        let serverImage = B64StrToImageObj(b64Str, "bmp");
+        // console.log(`Server image: ${serverImage}`);
+        if (serverImage !== undefined){
+          setResultImages([serverImage]);
+        }
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  };
 
+  // Hooks
   const onChange = (imageList, addUpdateIdx) => {
-    if (images.length === 0 && imageList.length === 1){ // Image added
+    if (stagedImages.length === 0 && imageList.length === 1){ // Image added
       putImage(imageList[0]);
-    } else if (images.length === 1 && imageList.length === 1) { // Image updated
+    } else if (stagedImages.length === 1 && imageList.length === 1) { // Image updated
       putImage(imageList[0]);
-    } else if (images.length === 1 && imageList.length === 0) { // Image removed
+    } else if (stagedImages.length === 1 && imageList.length === 0) { // Image removed
       deleteImage();
     }
   };
-
   useEffect(() => {
     getImage();
   }, []);
 
+  // Render
   return (
     <div className="ObjectDetection">
       <header className="ObjectDetection-header">
@@ -128,52 +153,61 @@ function ObjectDetection() {
       </header>
 
       <div className='ObjectDetection-body'>
-        <ImageUploading
-          multiple
-          value={images}
-          onChange={onChange}
-          maxNumber={maxNumber}
-          dataURLKey="data_url"
-        >
-          {({
-            imageList,
-            onImageUpload,
-            onImageRemoveAll,
-            errors,
-            onImageUpdate,
-            onImageRemove,
-            isDragging,
-            dragProps,
-          }) => (
-            // write your building UI
-            <div className="upload__image-wrapper">
-              { errors && <div>
-              {errors.maxNumber && <span>Number of selected images exceed maxNumber</span>}
-              {errors.acceptType && <span>Your selected file type is not allow</span>}
-              {errors.maxFileSize && <span>Selected file size exceed maxFileSize</span>}
-              {errors.resolution && <span>Selected file is not match your desired resolution</span>}
-              </div> }
-              <button
-                style={isDragging ? { color: 'red' } : undefined}
-                onClick={onImageUpload}
-                {...dragProps}
-              >
-                Click or Drop here
-              </button>
-              &nbsp;
-              <button onClick={onImageRemoveAll}>Remove all images</button>
-              {imageList.map((image, index) => (
-                <div key={index} className="image-item">
-                  <img src={image["data_url"]} alt="" width="100" />
-                  <div className="image-item__btn-wrapper">
-                    <button onClick={() => onImageUpdate(index)}>Update</button>
-                    <button onClick={() => onImageRemove(index)}>Remove</button>
+        <fieldset className='ObjectDetection-body-ImageUploading'>
+          <legend>Upload Image</legend>
+          <ImageUploading
+            multiple
+            value={stagedImages}
+            onChange={onChange}
+            maxNumber={maxNumber}
+            dataURLKey="data_url"
+          >
+            {({
+              imageList,
+              onImageUpload,
+              onImageRemoveAll,
+              errors,
+              onImageUpdate,
+              onImageRemove,
+              isDragging,
+              dragProps,
+            }) => (
+              // write your building UI
+              <div className="upload__image-wrapper">
+                { errors && <div>
+                {errors.maxNumber && <span>Number of selected images exceed maxNumber</span>}
+                {errors.acceptType && <span>Your selected file type is not allow</span>}
+                {errors.maxFileSize && <span>Selected file size exceed maxFileSize</span>}
+                {errors.resolution && <span>Selected file is not match your desired resolution</span>}
+                </div> }
+                <button
+                  style={isDragging ? { color: 'red' } : undefined}
+                  onClick={onImageUpload}
+                  {...dragProps}
+                >
+                  Click or Drop here
+                </button>
+                &nbsp;
+                <button onClick={onImageRemoveAll}>Remove all images</button>
+                {imageList.map((image, index) => (
+                  <div key={index} className="image-item">
+                    <img src={image["data_url"]} alt=""/>
+                    <div className="image-item__btn-wrapper">
+                      <button onClick={() => onImageUpdate(index)}>Update</button>
+                      <button onClick={() => onImageRemove(index)}>Remove</button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </ImageUploading>
+                ))}
+              </div>
+            )}
+          </ImageUploading>
+        </fieldset>
+        <fieldset className='ObjectDetection-body-ObjectDetectionPredict'>
+          <legend>Detect Objects</legend>
+          <button onClick={predictImage}>Detect Objects</button>
+          &nbsp;
+          <img src={resultImages[0] ? resultImages[0]["data_url"] : undefined} alt=""/>
+        </fieldset>
       </div>
     </div>
   );
