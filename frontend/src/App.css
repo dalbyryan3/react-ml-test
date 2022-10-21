@@ -1,0 +1,95 @@
+:root {
+  --global-background-color: #386785;
+  --global-background-accent-color: white;
+  --global-text-color: black;
+  --global-text-background-color: white;
+  --global-hover-text-color: white;
+  --global-hover-text-background-color: rgb(119, 190, 154);
+}
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width:50%;
+  max-height:25%;
+  width: auto;
+  height: auto;
+}
+button {
+  border: none;
+  color: var(--global-text-color);
+  background-color: var(--global-text-background-color);
+  padding: auto;
+  border-radius: 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 3vmin;
+}
+button:hover {
+  color: var(--global-hover-text-color);
+  background-color: var(--global-hover-text-background-color);
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 20%;
+  background-color: #f1f1f1;
+  height: 100%; /* Full height */
+  position: fixed; /* Make it stick, even on scroll */
+  overflow: auto; /* Enable scrolling if the sidenav has too much content */
+}
+
+li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+/* Change the link color on hover */
+li a:hover {
+  color: var(--global-hover-text-color);
+  background-color: var(--global-hover-text-background-color);
+}
+
+.App {
+  text-align: center;
+}
+.App .App-body {
+  color: var(--global-background-accent-color);
+  background-color: var(--global-background-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  margin-left: 20%;
+  padding-left: 20px;
+}
+
+.ObjectDetection-body {
+  box-sizing: border-box;
+}
+.ObjectDetection-body * + * {
+  margin-top: 10px;
+}
+.ObjectDetection-body legend {
+  font-size: calc(4vmin);
+  color: var(--global-background-accent-color);
+}
+.ObjectDetection-body-ImageUploading {
+  padding: 5%;
+  margin: 5%;
+  border-radius: 10px;
+  border: solid var(--global-background-accent-color);
+}
+.ObjectDetection-body-ObjectDetectionPredict {
+  padding: 5%;
+  margin: 5%;
+  border-radius: 10px;
+  border: solid var(--global-background-accent-color);
+}
